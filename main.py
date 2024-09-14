@@ -16,7 +16,7 @@ def main():
     print(f"Time taken: {end_time - start_time:.2f} seconds")
 
 
-# fetch post from url and put it in queue
+# fetch post from url according to given post id 
 def fetch_post(post_id):
     try:
         response = requests.get(url.format(post_id))
@@ -37,7 +37,7 @@ def fetch_posts_using_threads():
     for thread in threads:
         thread.join()
 
-# write data from queue in to the file
+# write data posts list in to the file
 def write_to_a_file(filename, posts):
         with open(filename, 'w') as file:
             json.dump(posts, file, indent=4)
