@@ -3,14 +3,14 @@ from queue import Queue
 
 url = "https://jsonplaceholder.typicode.com/posts/{}"
 num_of_posts = 77
-posts_queue = Queue()
-file_lock = threading.Lock()
+posts = []
+lock = threading.Lock()
 
 def main():
     start_time = time.perf_counter()
     
     fetch_posts_using_threads()
-    write_to_a_file('posts.json')
+    write_to_a_file('posts.json', posts)
     
     end_time = time.perf_counter()
     print(f"Time taken: {end_time - start_time:.2f} seconds")
@@ -20,8 +20,8 @@ def main():
 def fetch_post(post_id):
     try:
         response = requests.get(url.format(post_id))
-        post_data = response.json()
-        posts_queue.put(post_data)
+        with lock:
+            posts.append(response.json())
     except requests.RequestException as e:
         print(f"Error fetching post {post_id}: {e}")
 
@@ -38,15 +38,9 @@ def fetch_posts_using_threads():
         thread.join()
 
 # write data from queue in to the file
-def write_to_a_file(filename):
-    with file_lock:
-        all_posts = []
-        while not posts_queue.empty():
-            all_posts.append(posts_queue.get())
-        
-        all_posts.sort(key=lambda post: post['id'])
+def write_to_a_file(filename, posts):
         with open(filename, 'w') as file:
-            json.dump(all_posts, file, indent=4)
+            json.dump(posts, file, indent=4)
 
 
 if __name__ == "__main__":
